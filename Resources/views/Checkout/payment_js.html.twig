@@ -1,0 +1,15 @@
+<script type="text/javascript">
+
+    checkout.paymentHandlers['{{ code }}'] = function() {
+        var postData = {};
+        var code = "{{ code }}";
+        $('div#' + code).find('input, select, textarea').each(function(e){
+            var input = $(this);
+            var name = input.attr('name');
+            postData[name] = input.val();
+        });
+        postData['payment_method'] = code;
+        return postData;
+    };
+
+</script>
