@@ -23,6 +23,8 @@ class DummyPaymentService
 
     protected $isTestMode = false;
 
+    protected $isSubmission = false;
+
     protected $enableAuthorize = false;
 
     protected $enableCaptureOnInvoice = false;
@@ -213,6 +215,24 @@ class DummyPaymentService
     public function getIsTestMode()
     {
         return $this->isTestMode;
+    }
+
+    /**
+     * @param $isSubmission
+     * @return $this
+     */
+    public function setIsSubmission($isSubmission)
+    {
+        $this->isSubmission = $isSubmission;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getIsSubmission()
+    {
+        return $this->isSubmission;
     }
 
     /**
