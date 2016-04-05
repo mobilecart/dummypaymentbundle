@@ -1,6 +1,6 @@
 <script type="text/javascript">
 
-    checkout.paymentHandlers['{{ code }}'] = function() {
+    checkout.paymentHandlers['{{ code }}'] = function(buttonEl) {
         var postData = {};
         var code = "{{ code }}";
         $('div#' + code).find('input, select, textarea').each(function(e){
