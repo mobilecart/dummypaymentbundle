@@ -32,7 +32,7 @@
         </service>
 
         <!-- Event Listener: Collect Dummy Payment Method Service -->
-        <service id="cart.listener.payment.method.dummy" lazy="true" class="%cart.listener.payment.omnipay.method.handler.class%">
+        <service id="cart.listener.payment.method.dummy" lazy="true" class="%cart.listener.payment.method.handler.class%">
             <tag name="kernel.event_listener" event="payment_method.collect" method="onPaymentMethodCollect" priority="50" />
             <call method="setPaymentMethodService">
                 <argument type="service" id="cart.payment.method.dummy" />
