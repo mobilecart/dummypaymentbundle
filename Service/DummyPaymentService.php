@@ -17,31 +17,63 @@ class DummyPaymentService
 
     protected $form;
 
+    protected $action;
+
+    protected $defaultAction = self::ACTION_PURCHASE;
+
     protected $code = 'dummy';
 
     protected $label = 'Test Method';
 
     protected $isTestMode = false;
 
+    protected $isRefund = false;
+
     protected $isSubmission = false;
-
-    protected $enableAuthorize = false;
-
-    protected $enableCaptureOnInvoice = false;
-
-    protected $enableCaptureOnShipment = false;
 
     protected $paymentData = [];
 
     protected $orderData = [];
 
+    protected $orderPaymentData = [];
+
     protected $isAuthorized = false;
 
     protected $isCaptured = false;
 
-    protected $gatewayRequest;
+    protected $isPurchased = false;
 
-    protected $gatewayResponse;
+    protected $purchaseRequest;
+
+    protected $purchaseResponse;
+
+    protected $authorizeRequest;
+
+    protected $authorizeResponse;
+
+    protected $captureRequest;
+
+    protected $captureResponse;
+
+    protected $tokenCreateRequest;
+
+    protected $tokenCreateResponse;
+
+    protected $tokenPaymentRequest;
+
+    protected $tokenPaymentResponse;
+
+    protected $subscribeRecurringRequest;
+
+    protected $subscribeRecurringResponse;
+
+    protected $confirmation = '';
+
+    protected $ccFingerprint = '';
+
+    protected $ccLastFour = '';
+
+    protected $ccType = '';
 
     /**
      * @param $formFactory
@@ -61,61 +93,68 @@ class DummyPaymentService
         return $this->formFactory;
     }
 
-    /**
-     * @param $yesNo
-     * @return $this
-     */
-    public function setEnableAuthorize($yesNo)
+    public function setDefaultAction($action)
     {
-        $isEnabled = ($yesNo != '0' && $yesNo != 'false');
-        $this->enableAuthorize = $isEnabled;
+        if (!$this->supportsAction($action)) {
+            throw new \InvalidArgumentException("Un-Supported Payment Action specified");
+        }
+
+        $this->defaultAction = $action;
         return $this;
     }
 
     /**
-     * @return bool
+     * @return int
      */
-    public function getEnableAuthorize()
+    public function getDefaultAction()
     {
-        return $this->enableAuthorize;
+        return $this->defaultAction;
     }
 
     /**
-     * @param $yesNo
-     * @return $this
+     * @return array
      */
-    public function setEnableCaptureOnInvoice($yesNo)
+    public function supportsActions()
     {
-        $isEnabled = ($yesNo != '0' && $yesNo != 'false');
-        $this->enableCaptureOnInvoice = $isEnabled;
+        return [
+            self::ACTION_AUTHORIZE,
+            self::ACTION_CAPTURE,
+            self::ACTION_PURCHASE,
+        ];
+    }
+
+    /**
+     * @param $action
+     * @return bool
+     */
+    public function supportsAction($action)
+    {
+        return in_array($action, $this->supportsActions());
+    }
+
+    /**
+     * @param $action
+     * @return $this
+     * @throws \InvalidArgumentException
+     */
+    public function setAction($action)
+    {
+        if (!$this->supportsAction($action)) {
+            throw new \InvalidArgumentException("Invalid Payment Action Specified");
+        }
+
+        $this->action = $action;
         return $this;
     }
 
     /**
-     * @return bool
+     * @return mixed
      */
-    public function getEnableCaptureOnInvoice()
+    public function getAction()
     {
-        return $this->enableCaptureOnInvoice;
-    }
-
-    /**
-     * @param $yesNo
-     * @return $this
-     */
-    public function setEnableCaptureOnShipment($yesNo)
-    {
-        $isEnabled = ($yesNo != '0' && $yesNo != 'false');
-        $this->enableCaptureOnShipment = $isEnabled;
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function getEnableCaptureOnShipment()
-    {
-        return $this->enableCaptureOnShipment;
+        return isset($this->action)
+            ? $this->action
+            : $this->getDefaultAction();
     }
 
     /**
@@ -126,6 +165,7 @@ class DummyPaymentService
         $formType = new DummyPaymentType();
         $form = $this->getFormFactory()->create($formType);
         $this->setForm($form);
+
         return $this;
     }
 
@@ -184,22 +224,6 @@ class DummyPaymentService
     }
 
     /**
-     * @return bool
-     */
-    public function canAuthorize()
-    {
-        return false;
-    }
-
-    /**
-     * @return bool
-     */
-    public function canCapture()
-    {
-        return true;
-    }
-
-    /**
      * @param $isTestMode
      * @return $this
      */
@@ -215,6 +239,24 @@ class DummyPaymentService
     public function getIsTestMode()
     {
         return $this->isTestMode;
+    }
+
+    /**
+     * @param $isRefund
+     * @return $this
+     */
+    public function setIsRefund($isRefund)
+    {
+        $this->isRefund = $isRefund;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getIsRefund()
+    {
+        return $this->isRefund;
     }
 
     /**
@@ -272,9 +314,113 @@ class DummyPaymentService
     }
 
     /**
+     * @param $confirmation
      * @return $this
      */
-    public function buildGatewayRequest()
+    public function setConfirmation($confirmation)
+    {
+        $this->confirmation = $confirmation;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getConfirmation()
+    {
+        return $this->confirmation;
+    }
+
+    /**
+     * @param $ccFingerprint
+     * @return $this
+     */
+    public function setCcFingerprint($ccFingerprint)
+    {
+        $this->ccFingerprint = $ccFingerprint;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCcFingerprint()
+    {
+        return $this->ccFingerprint;
+    }
+
+    /**
+     * @param $ccLastFour
+     * @return $this
+     */
+    public function setCcLastFour($ccLastFour)
+    {
+        $this->ccLastFour = $ccLastFour;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCcLastFour()
+    {
+        return $this->ccLastFour;
+    }
+
+    /**
+     * @param $ccType
+     * @return $this
+     */
+    public function setCcType($ccType)
+    {
+        $this->ccType = $ccType;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCcType()
+    {
+        return $this->ccType;
+    }
+
+    /**
+     * @return array
+     */
+    public function extractOrderPaymentData()
+    {
+        $orderData = $this->getOrderData();
+
+        return [
+            'code' => $this->getCode(),
+            'label' => $this->getLabel(),
+            'base_currency' => $orderData['base_currency'],
+            'base_amount' => $orderData['base_total'],
+            'currency' => $orderData['currency'],
+            'amount' => $orderData['total'],
+            'is_refund' => $this->getIsRefund(),
+            'confirmation' => $this->getConfirmation(),
+            'cc_fingerprint' => $this->getCcFingerprint(),
+            'cc_last_four' => $this->getCcLastFour(),
+            'cc_type' => $this->getCcType(),
+        ];
+    }
+
+    //// Purchase
+
+    public function purchase()
+    {
+        $this->buildPurchaseRequest()
+            ->sendPurchaseRequest();
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function buildPurchaseRequest()
     {
         $orderData = $this->getOrderData();
         $paymentData = $this->getPaymentData();
@@ -282,7 +428,7 @@ class DummyPaymentService
         $amount = $orderData['total'];
         $currency = $orderData['currency'];
 
-        $this->setGatewayRequest([
+        $this->setPurchaseRequest([
             'amount' => $amount,
             'currency' => $currency,
             'card' => $paymentData,
@@ -295,56 +441,106 @@ class DummyPaymentService
      * @param $request
      * @return $this
      */
-    public function setGatewayRequest($request)
+    public function setPurchaseRequest($request)
     {
-        $this->gatewayRequest = $request;
+        $this->purchaseRequest = $request;
         return $this;
     }
 
     /**
      * @return mixed
      */
-    public function getGatewayRequest()
+    public function getPurchaseRequest()
     {
-        return $this->gatewayRequest;
+        return $this->purchaseRequest;
     }
 
     /**
      * @return $this
      */
-    public function sendGatewayRequest()
+    public function sendPurchaseRequest()
     {
         $gateway = new Gateway();
-        $gatewayResponse = $gateway->purchase($this->getGatewayRequest())->send();
-        $this->setGatewayResponse($gatewayResponse);
+        $purchaseResponse = $gateway->purchase($this->getPurchaseRequest())->send();
+        $this->setPurchaseResponse($purchaseResponse);
+
+        if ($purchaseResponse->isSuccessful()) {
+            $this->setIsPurchased(1);
+        }
+
         return $this;
     }
 
     /**
-     * @param $gatewayResponse
+     * @param $purchaseResponse
      * @return $this
      */
-    public function setGatewayResponse($gatewayResponse)
+    public function setPurchaseResponse($purchaseResponse)
     {
-        $this->gatewayResponse = $gatewayResponse;
+        $this->purchaseResponse = $purchaseResponse;
         return $this;
     }
 
     /**
      * @return mixed
      */
-    public function getGatewayResponse()
+    public function getPurchaseResponse()
     {
-        return $this->gatewayResponse;
+        return $this->purchaseResponse;
     }
+
+    public function setIsPurchased($isPurchased)
+    {
+        $this->isPurchased = $isPurchased;
+        return $this;
+    }
+
+    public function getIsPurchased()
+    {
+        return $this->isPurchased;
+    }
+
+    //// Authorize
 
     /**
      * @return $this
      */
     public function authorize()
     {
-        $this->setIsAuthorized(1);
+
         return $this;
+    }
+
+    public function buildAuthorizeRequest()
+    {
+
+    }
+
+    public function setAuthorizeRequest($authorizeRequest)
+    {
+        $this->authorizeRequest = $authorizeRequest;
+        return $this;
+    }
+
+    public function getAuthorizeRequest()
+    {
+        return $this->authorizeRequest;
+    }
+
+    public function sendAuthorizeRequest()
+    {
+
+    }
+
+    public function setAuthorizeResponse($authorizeResponse)
+    {
+        $this->authorizeResponse = $authorizeResponse;
+        return $this;
+    }
+
+    public function getAuthorizeResponse()
+    {
+        return $this->authorizeResponse;
     }
 
     /**
@@ -366,21 +562,63 @@ class DummyPaymentService
     }
 
     /**
+     * @return bool
+     */
+    public function authorizeAndCapture()
+    {
+        return $this->authorize() && $this->capture();
+    }
+
+    //// Capture (a pre-authorized transaction ONLY)
+
+    /**
      * @return $this
      */
     public function capture()
     {
-        $this->buildGatewayRequest()
-            ->sendGatewayRequest();
+        $this->buildCaptureRequest()
+            ->sendCaptureRequest();
 
-        /** @var \Omnipay\Common\Message\ResponseInterface $gatewayResponse */
-        $gatewayResponse = $this->getGatewayResponse();
+        /** @var \Omnipay\Common\Message\ResponseInterface $captureResponse */
+        $captureResponse = $this->getCaptureResponse();
 
-        $this->setIsCaptured($gatewayResponse->isSuccessful());
-
-        // todo : check for logger
+        $this->setIsCaptured($captureResponse->isSuccessful());
 
         return $this;
+    }
+
+    public function buildCaptureRequest()
+    {
+
+        return $this;
+    }
+
+    public function setCaptureRequest($captureRequest)
+    {
+        $this->captureRequest = $captureRequest;
+        return $this;
+    }
+
+    public function getCaptureRequest()
+    {
+        return $this->captureRequest;
+    }
+
+    public function sendCaptureRequest()
+    {
+
+        return $this;
+    }
+
+    public function setCaptureResponse($captureResponse)
+    {
+        $this->captureResponse = $captureResponse;
+        return $this;
+    }
+
+    public function getCaptureResponse()
+    {
+        return $this->captureResponse;
     }
 
     /**

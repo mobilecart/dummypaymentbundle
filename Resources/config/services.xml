@@ -20,15 +20,6 @@
             <call method="setFormFactory">
                 <argument type="service" id="form.factory" />
             </call>
-            <call method="setIsTestMode">
-                <argument type="string">%cart.payment.method.dummy.testmode%</argument>
-            </call>
-            <call method="setEnableAuthorize">
-                <argument type="string">%cart.payment.method.dummy.authorize%</argument>
-            </call>
-            <call method="setEnableCaptureOnInvoice">
-                <argument type="string">%cart.payment.method.dummy.capture%</argument>
-            </call>
         </service>
 
         <!-- Event Listener: Collect Dummy Payment Method Service -->
