@@ -28,6 +28,12 @@
             <call method="setPaymentMethodService">
                 <argument type="service" id="cart.payment.method.dummy" />
             </call>
+            <call method="setEntityService">
+                <argument type="service" id="cart.entity" />
+            </call>
+            <call method="setCartSessionService">
+                <argument type="service" id="cart.session" />
+            </call>
             <call method="setIsEnabled">
                 <argument type="string">%cart.payment.method.dummy.enabled%</argument>
             </call>
