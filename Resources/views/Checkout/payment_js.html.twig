@@ -1,6 +1,7 @@
 <script type="text/javascript">
+$(function() {
 
-    checkout.paymentHandlers['{{ code }}'] = function(buttonEl) {
+    paymentWidget.addPostDataGetter("{{ code }}", function(){
         var postData = {};
         var code = "{{ code }}";
         $('div#' + code).find('input, select, textarea').each(function(e){
@@ -10,6 +11,6 @@
         });
         postData['payment_method'] = code;
         return postData;
-    };
-
+    });
+});
 </script>

@@ -4,9 +4,15 @@ namespace MobileCart\DummyPaymentBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
+/**
+ * Class DummyPaymentType
+ * @package MobileCart\DummyPaymentBundle\Form
+ */
 class DummyPaymentType extends AbstractType
 {
     /**
@@ -37,7 +43,7 @@ class DummyPaymentType extends AbstractType
             $years[$year] = $year;
         }
 
-        $builder->add('number', 'text', [
+        $builder->add('number', TextType::class, [
                 'label' => 'Credit Card Number',
                 'required' => 1,
                 'constraints' => [
@@ -47,7 +53,7 @@ class DummyPaymentType extends AbstractType
                     'class' => 'form-control'
                 ]
             ])
-            ->add('expiryMonth', 'choice', [
+            ->add('expiryMonth', ChoiceType::class, [
                 'label' => 'Expiration Month',
                 'required' => 1,
                 'choices' => $months,
@@ -58,7 +64,7 @@ class DummyPaymentType extends AbstractType
                     'class' => 'form-control'
                 ]
             ])
-            ->add('expiryYear', 'choice', [
+            ->add('expiryYear', ChoiceType::class, [
                 'label' => 'Expiration Year',
                 'required' => 1,
                 'choices' => $years,
@@ -69,7 +75,7 @@ class DummyPaymentType extends AbstractType
                     'class' => 'form-control'
                 ]
             ])
-            ->add('cvv', 'text', [
+            ->add('cvv', TextType::class, [
                 'label' => 'CVV',
                 'required' => 1,
                 'constraints' => [
@@ -85,7 +91,7 @@ class DummyPaymentType extends AbstractType
     /**
      * @return string
      */
-    public function getName()
+    public function getBlockPrefix()
     {
         return 'dummy';
     }

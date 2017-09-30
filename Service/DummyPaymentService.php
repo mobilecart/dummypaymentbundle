@@ -8,7 +8,7 @@ use MobileCart\CoreBundle\Payment\PaymentMethodServiceInterface;
 
 /**
  * Class DummyPaymentService
- * @package MobileCart\CoreBundle\Payment\Method\Dummy
+ * @package MobileCart\DummyPaymentBundle\Service
  */
 class DummyPaymentService
     implements PaymentMethodServiceInterface
