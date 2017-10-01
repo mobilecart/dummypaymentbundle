@@ -3,7 +3,6 @@
 namespace MobileCart\DummyPaymentBundle\Service;
 
 use Omnipay\Dummy\Gateway; // composer package : omnipay/dummy
-use MobileCart\DummyPaymentBundle\Form\DummyPaymentType;
 use MobileCart\CoreBundle\Payment\PaymentMethodServiceInterface;
 
 /**
@@ -162,10 +161,8 @@ class DummyPaymentService
      */
     public function buildForm()
     {
-        $formType = new DummyPaymentType();
-        $form = $this->getFormFactory()->create($formType);
-        $this->setForm($form);
-
+        $formTypeClass = 'MobileCart\DummyPaymentBundle\Form\DummyPaymentType';
+        $this->setForm($this->getFormFactory()->create($formTypeClass));
         return $this;
     }
 
